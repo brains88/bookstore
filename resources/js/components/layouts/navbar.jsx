@@ -11,6 +11,8 @@ function Navbar({ onFilter, cartItems = [], onRemoveFromCart }) {
   const [showCartModal, setShowCartModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showNoResultsModal, setShowNoResultsModal] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false); 
+  const [searchResults, setSearchResults] = useState([]); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +45,9 @@ function Navbar({ onFilter, cartItems = [], onRemoveFromCart }) {
       .then((data) => {
         setLoading(false);
         if (data.length > 0) {
-          navigate('/booklist', { state: { results: data } }); 
+          setSearchResults(data);
+          //show result modal
+          setShowResultsModal(true); 
         } else {
           setShowNoResultsModal(true);
         }
@@ -69,6 +73,10 @@ function Navbar({ onFilter, cartItems = [], onRemoveFromCart }) {
 
   const calculateTotalPrice = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  };
+
+  const handleViewMore = (bookId) => {
+    navigate(`/books/${bookId}`);
   };
 
   return (
@@ -195,6 +203,37 @@ function Navbar({ onFilter, cartItems = [], onRemoveFromCart }) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowNoResultsModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Search Results Modal */}
+      <Modal show={showResultsModal} onHide={() => setShowResultsModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Search Results</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            {searchResults.map((book) => (
+              <div className="col-md-4 mb-3" key={book.id}>
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title mb-3">{book.title}</h5>
+                    <img src={book.image} alt={book.title} className="card-img-top mb-2" style={{ height: '150px' }} />
+                    <h6 className="card-subtitle mb-3 text-muted">${book.price}</h6>
+                    <p className="card-text">{book.description.length > 100 ? `${book.description.substring(0, 97)}...` : book.description}</p>
+                    <Button className='bookdetailButton w-100' onClick={() => handleViewMore(book.id)}>
+                      View More
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowResultsModal(false)}>
             Close
           </Button>
         </Modal.Footer>
